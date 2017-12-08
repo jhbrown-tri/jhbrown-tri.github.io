@@ -1,0 +1,58 @@
+<html>
+<title>Random passphrase generator</title>
+<body style="max-width: 600px">
+
+<h1>Random passphrase generator</h1>
+
+<h2> The random phrase </h2>
+<b>
+Your new passphrase:<br><br>
+<i><h><div style="color:red; border: 1px solid red; padding: 5px;" id="wordbox">Generator working...</div></i><p>
+</b>
+
+Don't like it?  Reload the page!<p>
+
+This passphrase is generated entirely in the browser using
+cryptographically-acceptable random seeding, and
+the <a href="https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases">EFF's
+long wordlist</a><p>
+
+<script>
+    (// Reference: https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases
+	    function () {
+
+		var xhttp = new XMLHttpRequest();
+		xhttp.open('GET',
+			   'eff_large_wordlist.txt',
+			   false); // synchronous
+		xhttp.send();
+		var wordList = xhttp.responseText.split('\n').map(numWord => numWord.split('\t')[1]);
+		passwords = [];
+
+		var wordCount = wordList.length;
+		var Uint16Max = Math.pow( 2, 16 )
+		var multiples = Math.floor( Uint16Max / wordCount );
+		var maxGood = wordCount * multiples;
+		console.log(multiples);
+		console.log(maxGood);
+
+		while (passwords.length < 6) {
+		    var value = new Uint16Array( 1 );
+		    window.crypto.getRandomValues( value );
+		    var index = value[0];
+
+		    if (index >= maxGood) continue;
+
+		    passwords.push(wordList[index % wordCount]);
+		    console.log(passwords);
+		}
+
+		var element = document.getElementById('wordbox');
+		element.textContent = passwords.join(' ');
+	    })()
+
+
+
+</script>
+</body>
+</html>
