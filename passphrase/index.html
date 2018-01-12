@@ -50,7 +50,7 @@
 		 var multiples = Math.floor( Uint16Max / wordCount ); 
 		 var firstBad = wordCount * multiples; 
 
-		 passwords = [];
+		 var passwords = [];
 		 while (passwords.length < 4) {
 		     var value = new Uint16Array( 1 );
 		     window.crypto.getRandomValues( value );
