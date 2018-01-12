@@ -1,0 +1,93 @@
+<html>
+    <title>Random passphrase generator</title>
+    <body style="max-width: 600px">
+	
+	<h1>Random passphrase generator</h1>
+	
+	<p>
+	    <b>
+		Your new passphrase:
+		<i>
+		    <h3>
+			<div style="color:red; border: 1px solid red; padding: 5px;" id="wordbox">
+			    Generator working...
+			</div>
+		    </h3>
+		</i>
+	    </b>
+	</p>
+	
+	<p>Don't like it?  Reload the page!</p>
+	
+	<p>This passphrase is generated entirely in the browser using
+	    cryptographically-acceptable random seeding and a copy of
+	    the <a href="https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases">EFF's
+	    long wordlist</a>.
+	</p>
+	
+	<script>
+	 (function () {
+	     var process = function (text) {
+		 /* Each line in the EFF wordlist has a 5-digit number and
+	            then the word, separated by a tab.  E.g.: "66642\tzero\n"
+
+	            The number is for picking words by rolling dice.
+	            We're just ignoring it, so the following line extracts
+	            just the words.  */
+		 var wordList = text.split('\n').map(numWord => numWord.split('\t')[1]);
+		 var wordCount = wordList.length;
+
+		 /* We'll use window.crypto.getRandomValues to generate
+	            16-bit random numbers.  In the event that 2^16 is not
+	            evenly divisible by the number of words in the
+	            wordlist (hint: it's not), it's not sufficient just to
+	            mod the random number by the number of words, because
+	            the uneven modulus will bias toward some words
+	            occurring more frequently than others.
+		    
+		    Thus the following. */
+		 var Uint16Max = Math.pow( 2, 16 ) // Compute a constant that JavaScript doesn't supply
+		 var multiples = Math.floor( Uint16Max / wordCount ); 
+		 var firstBad = wordCount * multiples; 
+
+		 var passwords = [];
+		 while (passwords.length < 4) {
+		     var value = new Uint16Array( 1 );
+		     window.crypto.getRandomValues( value );
+		     var index = value[0];
+
+		     if (index >= firstBad) continue;
+
+		     passwords.push(wordList[index % wordCount]);
+		 }
+
+		 var element = document.getElementById('wordbox');
+		 element.textContent = passwords.join(' ');
+	     }
+
+	     var fail = function (statusText) {
+		 var element = document.getElementById('wordbox');
+		 element.textContent = 'Unable to load word list: do not use!'
+	     }
+	     
+	     var xhttp = new XMLHttpRequest();
+	     xhttp.open('GET',
+			'eff_large_wordlist.txt');
+	     xhttp.onload = function (e) {
+		 if (xhttp.readyState === 4) {
+		     if (xhttp.status === 200) {
+			 process(xhttp.responseText);
+		     } else {
+			 fail(xhttp.statusText);
+		     }
+		 }
+	     }
+	     xhttp.onerror = function (e) {
+		 fail(xhttp.statusText);
+	     };		 
+	     
+	     xhttp.send();
+	 })()
+	</script>
+    </body>
+</html>
